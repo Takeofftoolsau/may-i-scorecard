@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>May I Scorecard</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Score tracking app for the May I card game">
+    <meta name="theme-color" content="#2a5298">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="May I">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons for iOS -->
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .setup-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-setup {
+            margin-bottom: 30px;
+        }
+
+        .player-setup h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .player-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #607D8B;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #546E7A;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .scorecard {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow-x: auto;
+        }
+
+        .round-indicator {
+            background: #ffd700;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #1e3c72;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .requirements {
+            background: #f5f5f5;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .requirements strong {
+            color: #1e3c72;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #1e3c72;
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        th:first-child {
+            width: 150px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .score-input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .total-cell {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1e3c72;
+        }
+
+        .winner-cell {
+            background: #4CAF50 !important;
+            color: white;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 0 0 12px 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .round-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .legend {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .legend h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-label {
+            font-weight: bold;
+            min-width: 120px;
+            color: #1e3c72;
+        }
+
+        .rules-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .rules-section h3 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .rules-content {
+            color: #333;
+        }
+
+        .rule-item {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .rule-item strong {
+            color: #1e3c72;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .rule-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .rule-item li {
+            margin-bottom: 5px;
+        }
+
+        .help-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2a5298;
+            color: white;
+            border: none;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .help-button:hover {
+            background: #1e3c72;
+            transform: scale(1.1);
+        }
+
+        .rules-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .rules-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .rules-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .rules-modal-header h2 {
+            color: #1e3c72;
+            font-size: 28px;
+        }
+
+        .close-button {
+            background: #f44336;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .close-button:hover {
+            background: #da190b;
+            transform: scale(1.1);
+        }
+
+        .game-summary {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-summary h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .winner-announcement {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .final-standings {
+            display: grid;
+            gap: 15px;
+        }
+
+        .standing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+        }
+
+        .standing-item.first {
+            border-left-color: #ffd700;
+            background: #fffbea;
+        }
+
+        .standing-rank {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3c72;
+            min-width: 40px;
+        }
+
+        .standing-name {
+            flex: 1;
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .standing-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .score-input {
+                width: 60px;
+                font-size: 14px;
+            }
+
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .round-nav {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const ROUNDS = [
+            { number: 1, sets: 2, runs: 0, description: "3+3" },
+            { number: 2, sets: 1, runs: 1, description: "3+4" },
+            { number: 3, sets: 0, runs: 2, description: "4+4" },
+            { number: 4, sets: 3, runs: 0, description: "3+3+3" },
+            { number: 5, sets: 2, runs: 1, description: "3+3+4" },
+            { number: 6, sets: 1, runs: 2, description: "3+4+4" },
+            { number: 7, sets: 0, runs: 3, description: "4+4+4" }
+        ];
+
+        function MayIScoring() {
+            const [gameStarted, setGameStarted] = useState(false);
+            const [players, setPlayers] = useState([
+                { name: '', scores: Array(7).fill('') }
+            ]);
+            const [currentRound, setCurrentRound] = useState(0);
+            const [gameComplete, setGameComplete] = useState(false);
+            const [showRules, setShowRules] = useState(false);
+
+            const addPlayer = () => {
+                setPlayers([...players, { 
+                    name: '', 
+                    scores: Array(7).fill('') 
+                }]);
+            };
+
+            const removePlayer = (index) => {
+                if (players.length > 1) {
+                    setPlayers(players.filter((_, i) => i !== index));
+                }
+            };
+
+            const updatePlayerName = (index, name) => {
+                const newPlayers = [...players];
+                newPlayers[index].name = name;
+                setPlayers(newPlayers);
+            };
+
+            const startGame = () => {
+                const validPlayers = players.filter(p => p.name.trim() !== '');
+                if (validPlayers.length < 2) {
+                    alert('Please add at least 2 players with names');
+                    return;
+                }
+                setPlayers(validPlayers);
+                setGameStarted(true);
+            };
+
+            const updateScore = (playerIndex, round, score) => {
+                const newPlayers = [...players];
+                const numScore = parseInt(score) || 0;
+                newPlayers[playerIndex].scores[round] = numScore;
+                setPlayers(newPlayers);
+            };
+
+            const calculateTotal = (playerIndex) => {
+                return players[playerIndex].scores.reduce((sum, score) => sum + (parseInt(score) || 0), 0);
+            };
+
+            const nextRound = () => {
+                if (currentRound < 6) {
+                    setCurrentRound(currentRound + 1);
+                }
+            };
+
+            const previousRound = () => {
+                if (currentRound > 0) {
+                    setCurrentRound(currentRound - 1);
+                }
+            };
+
+            const finishGame = () => {
+                setGameComplete(true);
+            };
+
+            const resetGame = () => {
+                setGameStarted(false);
+                setGameComplete(false);
+                setCurrentRound(0);
+                setPlayers([{ name: '', scores: Array(7).fill('') }]);
+            };
+
+            const getFinalStandings = () => {
+                return players
+                    .map((player, index) => ({
+                        ...player,
+                        total: calculateTotal(index),
+                        originalIndex: index
+                    }))
+                    .sort((a, b) => a.total - b.total);
+            };
+
+            if (gameComplete) {
+                const standings = getFinalStandings();
+                const winner = standings[0];
+
+                return (
+                    <div className="container">
+                        <div className="game-summary">
+                            <h2>Game Complete! 🎉</h2>
+                            
+                            <div className="winner-announcement">
+                                🏆 {winner.name} Wins! 🏆
+                                <div style={{ fontSize: '18px', marginTop: '10px' }}>
+                                    Final Score: {winner.total}
+                                </div>
+                            </div>
+
+                            <h3 style={{ color: '#1e3c72', marginBottom: '20px' }}>Final Standings</h3>
+                            <div className="final-standings">
+                                {standings.map((player, index) => (
+                                    <div key={player.originalIndex} className={`standing-item ${index === 0 ? 'first' : ''}`}>
+                                        <span className="standing-rank">#{index + 1}</span>
+                                        <span className="standing-name">{player.name}</span>
+                                        <span className="standing-score">{player.total} pts</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                <button className="btn btn-primary" onClick={resetGame}>
+                                    New Game
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (!gameStarted) {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <h1>May I Scorecard</h1>
+                            <p>Track scores across 7 rounds with sets and runs</p>
+                        </div>
+
+                        <div className="setup-section">
+                            <div className="player-setup">
+                                <h2>Setup Players</h2>
+                                <div className="player-inputs">
+                                    {players.map((player, index) => (
+                                        <div key={index} className="input-group">
+                                            <input
+                                                type="text"
+                                                placeholder={`Player ${index + 1} Name`}
+                                                value={player.name}
+                                                onChange={(e) => updatePlayerName(index, e.target.value)}
+                                            />
+                                            {players.length > 1 && (
+                                                <button 
+                                                    className="btn btn-danger btn-small"
+                                                    onClick={() => removePlayer(index)}
+                                                >
+                                                    ✕
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <button className="btn btn-secondary" onClick={addPlayer}>
+                                    + Add Player
+                                </button>
+                            </div>
+
+                            <div className="rules-section">
+                                <h3>How to Play May I</h3>
+                                <div className="rules-content">
+                                    <div className="rule-item">
+                                        <strong>Objective:</strong> Be the player with the lowest score after 7 rounds.
+                                    </div>
+                                    <div className="rule-item">
+                                        <strong>Rounds:</strong> Each round has specific requirements:
+                                        <ul>
+                                            <li>Round 1: 3+3 (2 sets of 3)</li>
+                                            <li>Round 2: 3+4 (1 set of 3 + 1 run of 4)</li>
+                                            <li>Round 3: 4+4 (2 runs of 4)</li>
+                                            <li>Round 4: 3+3+3 (3 sets of 3)</li>
+                                            <li>Round 5: 3+3+4 (2 sets of 3 + 1 run of 4)</li>
+                                            <li>Round 6: 3+4+4 (1 set of 3 + 2 runs of 4)</li>
+                                            <li>Round 7: 4+4+4 (3 runs of 4)</li>
+                                        </ul>
+                                    </div>
+                                    <div className="rule-item">
+                                        <strong>Sets vs Runs:</strong>
+                                        <ul>
+                                            <li><strong>Set:</strong> 3 or more cards of the same rank (e.g., three 7s)</li>
+                                            <li><strong>Run:</strong> 4 or more consecutive cards of the same suit (e.g., 5♥ 6♥ 7♥ 8♥)</li>
+                                        </ul>
+                                    </div>
+                                    <div className="rule-item">
+                                        <strong>Gameplay:</strong>
+                                        <ul>
+                                            <li>Each player is dealt 10 cards</li>
+                                            <li>On your turn, draw from the deck or discard pile</li>
+                                            <li>Try to form the required sets/runs for the round</li>
+                                            <li>When another player discards, you can say "May I?" to take it (up to 3 times per round)</li>
+                                            <li>If you say "May I?", you also draw a penalty card from the deck</li>
+                                            <li>Once you complete the round's requirements, lay them down and discard remaining cards</li>
+                                        </ul>
+                                    </div>
+                                    <div className="rule-item">
+                                        <strong>Scoring:</strong>
+                                        <ul>
+                                            <li>Player who goes out (uses all cards) scores 0 for that round</li>
+                                            <li>Other players count remaining cards: Aces = 15, Face cards = 10, Number cards = face value</li>
+                                            <li>Lowest total score after 7 rounds wins!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="legend">
+                                <h3>Round Requirements</h3>
+                                {ROUNDS.map(round => (
+                                    <div key={round.number} className="legend-item">
+                                        <span className="legend-label">Round {round.number}:</span>
+                                        <span>{round.description}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                <button className="btn btn-primary" onClick={startGame}>
+                                    Start Game
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const currentRoundData = ROUNDS[currentRound];
+
+            const RulesModal = () => (
+                <div className="rules-modal" onClick={() => setShowRules(false)}>
+                    <div className="rules-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="rules-modal-header">
+                            <h2>How to Play May I</h2>
+                            <button className="close-button" onClick={() => setShowRules(false)}>×</button>
+                        </div>
+                        <div className="rules-content">
+                            <div className="rule-item">
+                                <strong>Objective:</strong> Be the player with the lowest score after 7 rounds.
+                            </div>
+                            <div className="rule-item">
+                                <strong>Rounds:</strong> Each round has specific requirements:
+                                <ul>
+                                    <li>Round 1: 3+3 (2 sets of 3)</li>
+                                    <li>Round 2: 3+4 (1 set of 3 + 1 run of 4)</li>
+                                    <li>Round 3: 4+4 (2 runs of 4)</li>
+                                    <li>Round 4: 3+3+3 (3 sets of 3)</li>
+                                    <li>Round 5: 3+3+4 (2 sets of 3 + 1 run of 4)</li>
+                                    <li>Round 6: 3+4+4 (1 set of 3 + 2 runs of 4)</li>
+                                    <li>Round 7: 4+4+4 (3 runs of 4)</li>
+                                </ul>
+                            </div>
+                            <div className="rule-item">
+                                <strong>Sets vs Runs:</strong>
+                                <ul>
+                                    <li><strong>Set:</strong> 3 or more cards of the same rank (e.g., three 7s)</li>
+                                    <li><strong>Run:</strong> 4 or more consecutive cards of the same suit (e.g., 5♥ 6♥ 7♥ 8♥)</li>
+                                </ul>
+                            </div>
+                            <div className="rule-item">
+                                <strong>Gameplay:</strong>
+                                <ul>
+                                    <li>Each player is dealt 10 cards</li>
+                                    <li>On your turn, draw from the deck or discard pile</li>
+                                    <li>Try to form the required sets/runs for the round</li>
+                                    <li>When another player discards, you can say "May I?" to take it (up to 3 times per round)</li>
+                                    <li>If you say "May I?", you also draw a penalty card from the deck</li>
+                                    <li>Once you complete the round's requirements, lay them down and discard remaining cards</li>
+                                </ul>
+                            </div>
+                            <div className="rule-item">
+                                <strong>Scoring:</strong>
+                                <ul>
+                                    <li>Player who goes out (uses all cards) scores 0 for that round</li>
+                                    <li>Other players count remaining cards: Aces = 15, Face cards = 10, Number cards = face value</li>
+                                    <li>Lowest total score after 7 rounds wins!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="container">
+                    {gameStarted && (
+                        <button className="help-button" onClick={() => setShowRules(true)}>
+                            ?
+                        </button>
+                    )}
+                    
+                    {showRules && <RulesModal />}
+                    <div className="header">
+                        <h1>May I Scorecard</h1>
+                        <p>Lower score wins!</p>
+                    </div>
+
+                    <div className="scorecard">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Round</th>
+                                    {players.map((player, index) => (
+                                        <th key={index}>{player.name}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {ROUNDS.map((round, roundIndex) => (
+                                    <tr key={round.number} style={{ background: roundIndex === currentRound ? '#fffbea' : 'transparent' }}>
+                                        <td style={{ fontWeight: 'bold', fontSize: '16px' }}>{round.description}</td>
+                                        {players.map((player, playerIndex) => (
+                                            <td key={playerIndex} className={player.scores[roundIndex] === 0 && player.scores[roundIndex] !== '' ? 'winner-cell' : ''}>
+                                                <input
+                                                    type="number"
+                                                    className="score-input"
+                                                    value={player.scores[roundIndex] === 0 ? '0' : (player.scores[roundIndex] || '')}
+                                                    onChange={(e) => updateScore(playerIndex, roundIndex, e.target.value)}
+                                                    placeholder="0"
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                                <tr style={{ background: '#f5f5f5', borderTop: '3px solid #1e3c72' }}>
+                                    <td style={{ fontWeight: 'bold', fontSize: '18px' }}>TOTAL</td>
+                                    {players.map((player, playerIndex) => (
+                                        <td key={playerIndex} className="total-cell">
+                                            {calculateTotal(playerIndex)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div className="action-bar">
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button className="btn btn-primary" onClick={finishGame}>
+                                    Finish Game
+                                </button>
+                                <button className="btn btn-danger" onClick={resetGame}>
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="legend">
+                        <h3>How to Score</h3>
+                        <div className="legend-item">
+                            <span className="legend-label">Score Entry:</span>
+                            <span>Enter each player's remaining card points (Aces=15, Face cards=10, Numbers=face value)</span>
+                        </div>
+                        <div className="legend-item">
+                            <span className="legend-label">Round Winner:</span>
+                            <span>Enter 0 for the player who went out (used all cards) - highlighted in green</span>
+                        </div>
+                        <div className="legend-item">
+                            <span className="legend-label">Winning:</span>
+                            <span>Lowest total score after 7 rounds wins!</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<MayIScoring />, document.getElementById('root'));
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Only register service worker when hosted (not in preview/local file)
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:' && !window.location.hostname.includes('claudeusercontent')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

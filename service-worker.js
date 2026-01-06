@@ -1,6 +1,7 @@
-const CACHE_NAME = 'may-i-scorecard-v1';
+const CACHE_NAME = 'may-i-scorecard-v2';
 const urlsToCache = [
   './',
+  './index.html',
   './may-i-scoring.html',
   './manifest.json',
   './icon-192.png',
