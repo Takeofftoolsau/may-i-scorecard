@@ -653,53 +653,6 @@
                                 </button>
                             </div>
 
-                            <div className="rules-section">
-                                <h3>How to Play May I</h3>
-                                <div className="rules-content">
-                                    <div className="rule-item">
-                                        <strong>Objective:</strong> Be the player with the lowest score after 7 rounds.
-                                    </div>
-                                    <div className="rule-item">
-                                        <strong>Rounds:</strong> Each round has specific requirements:
-                                        <ul>
-                                            <li>Round 1: 3+3 (2 sets of 3)</li>
-                                            <li>Round 2: 3+4 (1 set of 3 + 1 run of 4)</li>
-                                            <li>Round 3: 4+4 (2 runs of 4)</li>
-                                            <li>Round 4: 3+3+3 (3 sets of 3)</li>
-                                            <li>Round 5: 3+3+4 (2 sets of 3 + 1 run of 4)</li>
-                                            <li>Round 6: 3+4+4 (1 set of 3 + 2 runs of 4)</li>
-                                            <li>Round 7: 4+4+4 (3 runs of 4)</li>
-                                        </ul>
-                                    </div>
-                                    <div className="rule-item">
-                                        <strong>Sets vs Runs:</strong>
-                                        <ul>
-                                            <li><strong>Set:</strong> 3 or more cards of the same rank (e.g., three 7s)</li>
-                                            <li><strong>Run:</strong> 4 or more consecutive cards of the same suit (e.g., 5♥ 6♥ 7♥ 8♥)</li>
-                                        </ul>
-                                    </div>
-                                    <div className="rule-item">
-                                        <strong>Gameplay:</strong>
-                                        <ul>
-                                            <li>Each player is dealt 10 cards</li>
-                                            <li>On your turn, draw from the deck or discard pile</li>
-                                            <li>Try to form the required sets/runs for the round</li>
-                                            <li>When another player discards, you can say "May I?" to take it (up to 3 times per round)</li>
-                                            <li>If you say "May I?", you also draw a penalty card from the deck</li>
-                                            <li>Once you complete the round's requirements, lay them down and discard remaining cards</li>
-                                        </ul>
-                                    </div>
-                                    <div className="rule-item">
-                                        <strong>Scoring:</strong>
-                                        <ul>
-                                            <li>Player who goes out (uses all cards) scores 0 for that round</li>
-                                            <li>Other players count remaining cards: Aces = 15, Face cards = 10, Number cards = face value</li>
-                                            <li>Lowest total score after 7 rounds wins!</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="legend">
                                 <h3>Round Requirements</h3>
                                 {ROUNDS.map(round => (
@@ -778,11 +731,10 @@
 
             return (
                 <div className="container">
-                    {gameStarted && (
-                        <button className="help-button" onClick={() => setShowRules(true)}>
-                            ?
-                        </button>
-                    )}
+                    {/* Show help button on both homepage and scorecard */}
+                    <button className="help-button" onClick={() => setShowRules(true)}>
+                        ?
+                    </button>
                     
                     {showRules && <RulesModal />}
                     <div className="header">
