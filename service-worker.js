@@ -1,7 +1,10 @@
 const CACHE_NAME = 'may-i-scorecard-v1';
 const urlsToCache = [
-  '/may-i-scoring.html',
-  '/manifest.json'
+  './',
+  './may-i-scoring.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Install event - cache files
@@ -13,6 +16,8 @@ self.addEventListener('install', (event) => {
         return cache.addAll(urlsToCache);
       })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // Fetch event - serve from cache, fallback to network
@@ -24,9 +29,26 @@ self.addEventListener('fetch', (event) => {
         if (response) {
           return response;
         }
-        return fetch(event.request);
-      }
-    )
+        
+        // Clone the request
+        const fetchRequest = event.request.clone();
+        
+        return fetch(fetchRequest).then((response) => {
+          // Check if valid response
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+          
+          // Clone the response
+          const responseToCache = response.clone();
+          
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          
+          return response;
+        });
+      })
   );
 });
 
@@ -44,4 +66,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Claim clients immediately
+  return self.clients.claim();
 });
