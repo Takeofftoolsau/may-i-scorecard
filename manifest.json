@@ -2,7 +2,7 @@
   "name": "May I Scorecard",
   "short_name": "May I",
   "description": "Score tracking app for the May I card game",
-  "start_url": "/may-i-scoring.html",
+  "start_url": "./may-i-scoring.html",
   "display": "standalone",
   "background_color": "#1e3c72",
   "theme_color": "#2a5298",
