@@ -507,6 +507,7 @@
             const [currentRound, setCurrentRound] = useState(0);
             const [gameComplete, setGameComplete] = useState(false);
             const [showRules, setShowRules] = useState(false);
+            const [showResetConfirm, setShowResetConfirm] = useState(false);
 
             const addPlayer = () => {
                 setPlayers([...players, { 
@@ -569,6 +570,15 @@
                 setGameComplete(false);
                 setCurrentRound(0);
                 setPlayers([{ name: '', scores: Array(7).fill('') }]);
+                setShowResetConfirm(false);
+            };
+
+            const confirmReset = () => {
+                setShowResetConfirm(true);
+            };
+
+            const cancelReset = () => {
+                setShowResetConfirm(false);
             };
 
             const getFinalStandings = () => {
@@ -622,8 +632,13 @@
                 return (
                     <div className="container">
                         <div className="header">
-                            <h1>May I Scorecard</h1>
-                            <p>Track scores across 7 rounds with sets and runs</p>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                                <img src="icon-192.png" alt="May I Scorecard" style={{ width: '60px', height: '60px', borderRadius: '12px' }} />
+                                <div>
+                                    <h1>May I Scorecard</h1>
+                                    <p>Track scores across 7 rounds with sets and runs</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="setup-section">
@@ -720,6 +735,29 @@
                 </div>
             );
 
+            const ResetConfirmModal = () => (
+                <div className="rules-modal" onClick={cancelReset}>
+                    <div className="rules-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                        <div className="rules-modal-header">
+                            <h2>Reset Game?</h2>
+                        </div>
+                        <div className="rules-content">
+                            <p style={{ fontSize: '16px', marginBottom: '20px' }}>
+                                Are you sure you want to reset the game? All scores and player data will be lost.
+                            </p>
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                                <button className="btn btn-danger" onClick={resetGame}>
+                                    Yes, Reset Game
+                                </button>
+                                <button className="btn btn-secondary" onClick={cancelReset}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
             return (
                 <div className="container">
                     {/* Show help button on both homepage and scorecard */}
@@ -728,9 +766,15 @@
                     </button>
                     
                     {showRules && <RulesModal />}
+                    {showResetConfirm && <ResetConfirmModal />}
                     <div className="header">
-                        <h1>May I Scorecard</h1>
-                        <p>Lower score wins!</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                            <img src="icon-192.png" alt="May I Scorecard" style={{ width: '60px', height: '60px', borderRadius: '12px' }} />
+                            <div>
+                                <h1>May I Scorecard</h1>
+                                <p>Lower score wins!</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="scorecard">
@@ -777,7 +821,7 @@
                                 <button className="btn btn-primary" onClick={finishGame}>
                                     Finish Game
                                 </button>
-                                <button className="btn btn-danger" onClick={resetGame}>
+                                <button className="btn btn-danger" onClick={confirmReset}>
                                     Reset
                                 </button>
                             </div>
