@@ -318,24 +318,23 @@
             position: fixed;
             bottom: 30px;
             right: 30px;
-            padding: 15px 25px;
-            border-radius: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
             background: #4CAF50;
             color: white;
             border: none;
-            font-size: 16px;
+            font-size: 28px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             transition: all 0.2s ease;
             z-index: 999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .help-button:hover {
             background: #45a049;
-            transform: scale(1.05);
+            transform: scale(1.1);
         }
 
         .rules-modal {
@@ -762,7 +761,7 @@
                 <div className="container">
                     {/* Show help button on both homepage and scorecard */}
                     <button className="help-button" onClick={() => setShowRules(true)}>
-                        How To Play
+                        ?
                     </button>
                     
                     {showRules && <RulesModal />}
