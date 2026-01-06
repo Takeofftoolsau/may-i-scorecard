@@ -653,16 +653,6 @@
                                 </button>
                             </div>
 
-                            <div className="legend">
-                                <h3>Round Requirements</h3>
-                                {ROUNDS.map(round => (
-                                    <div key={round.number} className="legend-item">
-                                        <span className="legend-label">Round {round.number}:</span>
-                                        <span>{round.description}</span>
-                                    </div>
-                                ))}
-                            </div>
-
                             <div style={{ marginTop: '30px', textAlign: 'center' }}>
                                 <button className="btn btn-primary" onClick={startGame}>
                                     Start Game
