@@ -456,6 +456,70 @@
             color: #1e3c72;
         }
 
+        .saved-games-list {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .saved-game-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .saved-game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .saved-game-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .saved-game-winner {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .saved-game-scores {
+            display: grid;
+            gap: 10px;
+        }
+
+        .saved-score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .nav-button {
+            background: #607D8B;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .nav-button:hover {
+            background: #546E7A;
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 24px;
@@ -507,6 +571,16 @@
             const [gameComplete, setGameComplete] = useState(false);
             const [showRules, setShowRules] = useState(false);
             const [showResetConfirm, setShowResetConfirm] = useState(false);
+            const [viewingSavedGames, setViewingSavedGames] = useState(false);
+            const [savedGames, setSavedGames] = useState([]);
+
+            // Load saved games from localStorage on mount
+            useEffect(() => {
+                const saved = localStorage.getItem('mayIScorecards');
+                if (saved) {
+                    setSavedGames(JSON.parse(saved));
+                }
+            }, []);
 
             const addPlayer = () => {
                 setPlayers([...players, { 
@@ -564,6 +638,34 @@
                 setGameComplete(true);
             };
 
+            const saveGame = () => {
+                const gameData = {
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString(),
+                    time: new Date().toLocaleTimeString(),
+                    players: players.map(p => ({
+                        name: p.name,
+                        scores: p.scores,
+                        total: calculateTotal(players.indexOf(p))
+                    })),
+                    winner: getFinalStandings()[0].name
+                };
+
+                const existingSaved = localStorage.getItem('mayIScorecards');
+                const savedArray = existingSaved ? JSON.parse(existingSaved) : [];
+                savedArray.unshift(gameData); // Add to beginning
+                localStorage.setItem('mayIScorecards', JSON.stringify(savedArray));
+                setSavedGames(savedArray);
+                
+                alert('Game saved successfully!');
+            };
+
+            const deleteSavedGame = (gameId) => {
+                const updated = savedGames.filter(g => g.id !== gameId);
+                localStorage.setItem('mayIScorecards', JSON.stringify(updated));
+                setSavedGames(updated);
+            };
+
             const resetGame = () => {
                 setGameStarted(false);
                 setGameComplete(false);
@@ -618,10 +720,72 @@
                             </div>
 
                             <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                                <button className="btn btn-primary" onClick={saveGame} style={{ marginRight: '10px' }}>
+                                    Save Game
+                                </button>
                                 <button className="btn btn-primary" onClick={resetGame}>
                                     New Game
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (viewingSavedGames) {
+                return (
+                    <div className="container">
+                        <button className="help-button" onClick={() => setShowRules(true)}>?</button>
+                        {showRules && <RulesModal />}
+
+                        <div className="header">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
+                                <img src="icon-192.png" alt="May I Scorecard" style={{ width: '60px', height: '60px', borderRadius: '12px' }} />
+                                <div>
+                                    <h1>Saved Games</h1>
+                                    <p>View past scorecards</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '20px' }}>
+                            <button className="nav-button" onClick={() => setViewingSavedGames(false)}>
+                                ← Back to Home
+                            </button>
+
+                            {savedGames.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px' }}>
+                                    <h3 style={{ color: '#666' }}>No saved games yet</h3>
+                                    <p style={{ color: '#999' }}>Complete a game and save it to see it here!</p>
+                                </div>
+                            ) : (
+                                <div className="saved-games-list">
+                                    {savedGames.map(game => (
+                                        <div key={game.id} className="saved-game-card">
+                                            <div className="saved-game-header">
+                                                <div>
+                                                    <div className="saved-game-winner">🏆 {game.winner}</div>
+                                                    <div className="saved-game-date">{game.date} at {game.time}</div>
+                                                </div>
+                                                <button 
+                                                    className="btn btn-danger btn-small"
+                                                    onClick={() => deleteSavedGame(game.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                            <div className="saved-game-scores">
+                                                {game.players.map((player, idx) => (
+                                                    <div key={idx} className="saved-score-row">
+                                                        <span style={{ fontWeight: '600' }}>{player.name}</span>
+                                                        <span style={{ fontWeight: 'bold', color: '#1e3c72' }}>{player.total} pts</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -668,9 +832,12 @@
                                 </button>
                             </div>
 
-                            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                            <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 <button className="btn btn-primary" onClick={startGame}>
                                     Start Game
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => setViewingSavedGames(true)}>
+                                    View Saved Games
                                 </button>
                             </div>
                         </div>
@@ -713,7 +880,7 @@
                             <div className="rule-item">
                                 <strong>Gameplay:</strong>
                                 <ul>
-                                    <li>Each player is dealt 11 cards</li>
+                                    <li>Each player is dealt 10 cards</li>
                                     <li>On your turn, draw from the deck or discard pile</li>
                                     <li>Try to form the required sets/runs for the round</li>
                                     <li>When another player discards, you can say "May I?" to take it (up to 3 times per round)</li>
@@ -725,7 +892,7 @@
                                 <strong>Scoring:</strong>
                                 <ul>
                                     <li>Player who goes out (uses all cards) scores 0 for that round</li>
-                                    <li>Other players count remaining cards: Jokers = 25, Aces = 15, Face cards = 10, Number cards = face value</li>
+                                    <li>Other players count remaining cards: Aces = 15, Face cards = 10, Number cards = face value</li>
                                     <li>Lowest total score after 7 rounds wins!</li>
                                 </ul>
                             </div>
